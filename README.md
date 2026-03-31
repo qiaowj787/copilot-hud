@@ -1,90 +1,103 @@
 # copilot-hud
 
-`copilot-hud` is a GitHub Copilot CLI plugin and HUD runtime that makes Copilot sessions easier to understand at a glance.
+A HUD plugin for GitHub Copilot CLI.
 
-It is inspired by `claude-hud`, but adapted to the current GitHub Copilot CLI plugin model and local state layout.
+`copilot-hud` turns Copilot session data into a compact terminal status view. It is designed for people who want a `claude-hud`-style experience in Copilot CLI, with a simple install flow and practical defaults.
 
-## What it shows
+[简体中文说明](./README.zh-CN.md)
 
-- Current project path and git branch
-- Session model and mode when available
-- Context-window usage when Copilot passes official `statusLine` stdin JSON
-- Premium request count and token usage derived from Copilot session events
-- Active and completed tool activity
-- Running and completed subagents
-- Todo progress from the session database when present
-- Session duration and summary metadata
+## What it does
 
-## How it integrates
+`copilot-hud` can show:
 
-GitHub Copilot CLI exposes an official `statusLine` setting that executes a command and passes the current session status as JSON on `stdin`.
+- project path and git branch
+- current model and mode
+- context window usage when Copilot passes `statusLine` JSON on stdin
+- request and token usage derived from local session data
+- active and completed tools
+- subagent activity
+- todo progress from the session database
+- session duration and summary
 
-`copilot-hud` uses that as the primary integration path, then enriches the status line with local data from `~/.copilot/session-state`.
+## How it works
 
-It also ships with fallback modes for `tmux`, shell prompts, and dedicated watch panes.
+GitHub Copilot CLI supports a `statusLine` command that receives the current session state as JSON on stdin.
+
+`copilot-hud` uses that official integration first, then enriches the display with data from `~/.copilot/session-state`.
+
+It also supports standalone modes for `tmux`, shell prompts, and dedicated watch panes.
 
 ## Installation
 
-### Plugin install
+### Quick install
 
-From a Copilot CLI session:
+Inside Copilot CLI:
 
-```bash
-/plugin install OWNER/REPO
+```text
+/plugin install qiaowj787/copilot-hud
+/copilot-hud:setup
 ```
 
-For local development:
+That is the shortest path to a working HUD.
 
-```bash
-copilot plugin install .
-```
+### Requirements
 
-Then use the setup flow:
+- GitHub Copilot CLI
+- Node.js `>= 22`
+
+## Usage
+
+### 1. Use as Copilot `statusLine`
+
+This is the recommended mode.
+
+After installation, run:
 
 ```text
 /copilot-hud:setup
 ```
 
-### Local development
+The setup flow can write the `statusLine` config for you.
 
-```bash
-npm install
-npm run build
-npm test
-```
+### 2. Snapshot mode
 
-## Runtime usage
-
-### Snapshot mode
-
-Good for `tmux` status commands, shell prompts, or ad-hoc inspection.
+Useful for quick inspection, shell prompts, or tmux status commands.
 
 ```bash
 node dist/index.js snapshot
 node dist/index.js snapshot --json
 node dist/index.js snapshot --cwd /path/to/project
-printf '%s' '{\"context\":{\"cwd\":\"/path/to/project\"},\"model\":{\"display_name\":\"gpt-5.4\"}}' | node dist/index.js
 ```
 
-### Watch mode
+### 3. Watch mode
 
-Good for a dedicated terminal pane.
+Useful for a dedicated terminal pane.
 
 ```bash
 node dist/index.js watch
 node dist/index.js watch --interval 1000
 ```
 
-### Session listing
+### 4. List sessions
 
 ```bash
 node dist/index.js sessions
 node dist/index.js sessions --json
 ```
 
-## Copilot statusLine configuration
+## Example output
 
-`/copilot-hud:setup` can write this for you automatically. Manual example:
+```text
+[gpt-5.4]  github/copilot-hud  git:(main*)  summary:Preview copilot-hud  mode:autopilot
+Context 23% (45k/200k) | Requests 4 | Rate monthly 20% | weekly 30% | Tokens in 0 | out 69k | Duration 40m 2s
+Tools ◐ bash | ◐ bash | ✓ bash ×117 | ✓ report_intent ×38 | ✓ apply_patch ×16
+Agents ✓ done 1
+Todos (5/5 done)
+```
+
+## Manual configuration
+
+If you want to configure Copilot manually, add this to `~/.copilot/config.json`:
 
 ```json
 {
@@ -96,11 +109,9 @@ node dist/index.js sessions --json
 }
 ```
 
-When invoked this way, Copilot sends session status JSON to `stdin`, and `copilot-hud` merges it with local session-state data.
+## HUD config file
 
-## HUD configuration
-
-Default config path:
+Optional runtime config:
 
 ```text
 ~/.copilot/plugins/copilot-hud/config.json
@@ -128,14 +139,22 @@ Example:
 }
 ```
 
-## Plugin contents
+## Development
 
-- `skills/copilot-hud/SKILL.md`
-- `commands/setup.md`
-- `commands/configure.md`
-- `plugin.json`
-- `dist/index.js`
+```bash
+npm install
+npm run build
+npm test
+```
 
-## Design notes
+## Project files
 
-The initial implementation plan is captured in `docs/plans/2026-03-31-copilot-hud-design.md`.
+- `plugin.json` — Copilot plugin manifest
+- `commands/` — setup and configure flows
+- `skills/copilot-hud/` — reusable skill
+- `src/` — runtime source
+- `dist/` — compiled runtime
+
+## License
+
+MIT. See [`LICENSE`](./LICENSE).
