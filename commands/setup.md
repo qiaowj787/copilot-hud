@@ -54,7 +54,17 @@ test -x "$RUNTIME_PATH"
 
 4. Ask the user which integration target they want. Recommend Copilot `statusLine` first.
 
-5. Generate the absolute command in shell:
+5. For `statusLine`, prefer a shell-generated command that dynamically resolves the installed plugin path at runtime, so plugin updates do not require re-running setup.
+
+Preferred pattern:
+
+```bash
+bash -lc 'COPILOT_DIR="${COPILOT_HOME:-$HOME/.copilot}"; PLUGIN_DIR="$COPILOT_DIR/installed-plugins/_direct/qiaowj787--copilot-hud"; exec "/ABSOLUTE/RUNTIME/PATH" "$PLUGIN_DIR/dist/index.js"'
+```
+
+Use the direct absolute command only for manual validation or fallback contexts.
+
+6. Generate the concrete command in shell for the chosen target:
 
 ```bash
 "/ABSOLUTE/RUNTIME/PATH" "/ABSOLUTE/PLUGIN/PATH/dist/index.js"
@@ -62,14 +72,14 @@ test -x "$RUNTIME_PATH"
 
 Do not ask the model to manually compose path strings when the shell can provide them directly.
 
-6. For Copilot `statusLine`, update `~/.copilot/config.json` by merging:
+7. For Copilot `statusLine`, update `~/.copilot/config.json` by merging:
 
 ```json
 {
   "experimental": true,
   "statusLine": {
     "type": "command",
-    "command": "\"/ABSOLUTE/RUNTIME/PATH\" \"/ABSOLUTE/PLUGIN/PATH/dist/index.js\"",
+    "command": "bash -lc 'COPILOT_DIR=\"${COPILOT_HOME:-$HOME/.copilot}\"; PLUGIN_DIR=\"$COPILOT_DIR/installed-plugins/_direct/qiaowj787--copilot-hud\"; exec \"/ABSOLUTE/RUNTIME/PATH\" \"$PLUGIN_DIR/dist/index.js\"'",
     "padding": 1
   }
 }
@@ -86,8 +96,12 @@ from pathlib import Path
 
 config_path = Path.home() / ".copilot" / "config.json"
 runtime = "/ABSOLUTE/RUNTIME/PATH"
-plugin = "/ABSOLUTE/PLUGIN/PATH/dist/index.js"
-command = f'"{runtime}" "{plugin}"'
+command = (
+    "bash -lc '"
+    "COPILOT_DIR=\"${COPILOT_HOME:-$HOME/.copilot}\"; "
+    "PLUGIN_DIR=\"$COPILOT_DIR/installed-plugins/_direct/qiaowj787--copilot-hud\"; "
+    f"exec \"{runtime}\" \"$PLUGIN_DIR/dist/index.js\"'"
+)
 
 data = json.loads(config_path.read_text()) if config_path.exists() else {}
 data["experimental"] = True
@@ -102,8 +116,8 @@ config_path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n")
 PY
 ```
 
-7. Preserve existing config keys and do not overwrite unrelated settings.
-8. If the user chose tmux or shell fallback instead, only edit the corresponding dotfile and avoid changing Copilot config.
+8. Preserve existing config keys and do not overwrite unrelated settings.
+9. If the user chose tmux or shell fallback instead, only edit the corresponding dotfile and avoid changing Copilot config.
 
 ## Validation
 
@@ -115,20 +129,23 @@ After writing the config:
 printf '%s' '{"context":{"cwd":"'"$(pwd)"'"},"model":{"display_name":"gpt-5.4"}}' | "/ABSOLUTE/RUNTIME/PATH" "/ABSOLUTE/PLUGIN/PATH/dist/index.js"
 ```
 
-2. If that succeeds, read back the relevant part of `~/.copilot/config.json` to verify the merged config actually contains:
+2. Also run the exact generated `statusLine.command` string once in shell to verify the dynamic command itself works.
+
+3. If that succeeds, read back the relevant part of `~/.copilot/config.json` to verify the merged config actually contains:
 
 - `"experimental": true`
 - `statusLine.type = "command"`
 - the generated absolute command
 
-3. If Copilot `statusLine` was configured, remind the user that Copilot CLI currently requires `"experimental": true` for the status line to render.
-4. Tell the user to restart Copilot CLI or start a new session to see the HUD below the input area.
+4. If Copilot `statusLine` was configured, remind the user that Copilot CLI currently requires `"experimental": true` for the status line to render.
+5. Tell the user to restart Copilot CLI or start a new session to see the HUD below the input area.
 
-5. If the HUD still does not appear, debug with shell first:
+6. If the HUD still does not appear, debug with shell first:
 
 ```bash
 cat ~/.copilot/config.json
 printf '%s' '{"context":{"cwd":"'"$(pwd)"'"},"model":{"display_name":"gpt-5.4"}}' | "/ABSOLUTE/RUNTIME/PATH" "/ABSOLUTE/PLUGIN/PATH/dist/index.js"
+bash -lc 'COPILOT_DIR="${COPILOT_HOME:-$HOME/.copilot}"; PLUGIN_DIR="$COPILOT_DIR/installed-plugins/_direct/qiaowj787--copilot-hud"; exec "/ABSOLUTE/RUNTIME/PATH" "$PLUGIN_DIR/dist/index.js"'
 ```
 
 Only fall back to additional conversation after those checks fail.
@@ -138,7 +155,7 @@ Only fall back to additional conversation after those checks fail.
 If the user picks tmux, prefer:
 
 ```tmux
-set -g status-right '#("/ABSOLUTE/RUNTIME/PATH" "/ABSOLUTE/PLUGIN/PATH/dist/index.js" snapshot --no-color | head -n 1)'
+set -g status-right '#(COPILOT_DIR="${COPILOT_HOME:-$HOME/.copilot}"; PLUGIN_DIR="$COPILOT_DIR/installed-plugins/_direct/qiaowj787--copilot-hud"; "/ABSOLUTE/RUNTIME/PATH" "$PLUGIN_DIR/dist/index.js" snapshot --no-color | head -n 1)'
 ```
 
 ## Shell fallback
@@ -146,8 +163,8 @@ set -g status-right '#("/ABSOLUTE/RUNTIME/PATH" "/ABSOLUTE/PLUGIN/PATH/dist/inde
 If the user picks shell aliases, prefer:
 
 ```bash
-alias copilot-hud='"/ABSOLUTE/RUNTIME/PATH" "/ABSOLUTE/PLUGIN/PATH/dist/index.js" snapshot'
-alias copilot-hud-watch='"/ABSOLUTE/RUNTIME/PATH" "/ABSOLUTE/PLUGIN/PATH/dist/index.js" watch'
+alias copilot-hud='COPILOT_DIR="${COPILOT_HOME:-$HOME/.copilot}"; PLUGIN_DIR="$COPILOT_DIR/installed-plugins/_direct/qiaowj787--copilot-hud"; "/ABSOLUTE/RUNTIME/PATH" "$PLUGIN_DIR/dist/index.js" snapshot'
+alias copilot-hud-watch='COPILOT_DIR="${COPILOT_HOME:-$HOME/.copilot}"; PLUGIN_DIR="$COPILOT_DIR/installed-plugins/_direct/qiaowj787--copilot-hud"; "/ABSOLUTE/RUNTIME/PATH" "$PLUGIN_DIR/dist/index.js" watch'
 ```
 
 When editing shell files, append the concrete alias lines with shell commands and then tell the user which file was updated.

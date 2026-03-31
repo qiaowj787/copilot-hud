@@ -6,7 +6,7 @@ description: Use this when you need to inspect GitHub Copilot CLI session health
 When the user asks about GitHub Copilot CLI session usage, live activity, current session state, or wants a HUD/status overview, use this workflow:
 
 1. Prefer the local `copilot-hud` runtime over hand-reading session files.
-2. If the user wants the HUD visible inside Copilot CLI itself, configure Copilot `statusLine` to run the runtime with an absolute executable path, and ensure `experimental` mode is enabled in `~/.copilot/config.json`.
+2. If the user wants the HUD visible inside Copilot CLI itself, configure Copilot `statusLine` with a shell-first command that dynamically resolves the installed plugin path, and ensure `experimental` mode is enabled in `~/.copilot/config.json`.
 3. Use `node dist/index.js snapshot --json` for structured inspection.
 4. Use `node dist/index.js watch` when the user wants a continuously refreshing HUD in a dedicated terminal pane.
 5. Use `node dist/index.js sessions --json` if you need to choose the right session first.

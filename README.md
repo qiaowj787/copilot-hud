@@ -57,7 +57,7 @@ After installation, run:
 /copilot-hud:setup
 ```
 
-The setup flow can write the `statusLine` config for you. It should enable Copilot CLI experimental mode and use an absolute runtime path so the status command keeps working outside your interactive shell environment.
+The setup flow can write the `statusLine` config for you. It uses shell-first detection, enables Copilot CLI experimental mode, and prefers a command that dynamically resolves the installed plugin path so plugin updates do not require re-running setup.
 
 ### 2. Snapshot mode
 
@@ -104,7 +104,7 @@ If you want to configure Copilot manually, add this to `~/.copilot/config.json`:
   "experimental": true,
   "statusLine": {
     "type": "command",
-    "command": "\"/ABSOLUTE/RUNTIME/PATH\" \"/ABSOLUTE/PLUGIN/PATH/dist/index.js\"",
+    "command": "bash -lc 'COPILOT_DIR=\"${COPILOT_HOME:-$HOME/.copilot}\"; PLUGIN_DIR=\"$COPILOT_DIR/installed-plugins/_direct/qiaowj787--copilot-hud\"; exec \"/ABSOLUTE/RUNTIME/PATH\" \"$PLUGIN_DIR/dist/index.js\"'",
     "padding": 1
   }
 }
