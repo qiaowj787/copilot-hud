@@ -57,7 +57,7 @@ After installation, run:
 /copilot-hud:setup
 ```
 
-The setup flow can write the `statusLine` config for you.
+The setup flow can write the `statusLine` config for you. It should enable Copilot CLI experimental mode and use an absolute runtime path so the status command keeps working outside your interactive shell environment.
 
 ### 2. Snapshot mode
 
@@ -101,13 +101,16 @@ If you want to configure Copilot manually, add this to `~/.copilot/config.json`:
 
 ```json
 {
+  "experimental": true,
   "statusLine": {
     "type": "command",
-    "command": "node \"/ABSOLUTE/PLUGIN/PATH/dist/index.js\"",
+    "command": "\"/ABSOLUTE/RUNTIME/PATH\" \"/ABSOLUTE/PLUGIN/PATH/dist/index.js\"",
     "padding": 1
   }
 }
 ```
+
+`statusLine` currently depends on Copilot CLI experimental mode. If the HUD does not appear after restart, make sure `"experimental": true` is present and start a new Copilot session.
 
 ## HUD config file
 

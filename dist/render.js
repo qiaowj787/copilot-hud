@@ -51,25 +51,25 @@ function renderTodos(metrics) {
     const title = todo.currentTitle ? `${todo.currentTitle} ` : '';
     return `${title}(${todo.done}/${todo.total} done${todo.blocked ? `, ${todo.blocked} blocked` : ''})`;
 }
-function renderUsage(metrics, palette) {
+function renderUsage(metrics, config, palette) {
     const parts = [];
     if (metrics.contextWindow?.currentInputTokens !== undefined && metrics.contextWindow.maximumInputTokens) {
         const percent = clamp((metrics.contextWindow.currentInputTokens / metrics.contextWindow.maximumInputTokens) * 100, 0, 100);
         parts.push(`${palette.label('Context')} ${palette.value(`${Math.round(percent)}% (${compactNumber(metrics.contextWindow.currentInputTokens)}/${compactNumber(metrics.contextWindow.maximumInputTokens)})`)}`);
     }
-    if (metrics.premiumRequests > 0) {
+    if (config.display.showPremiumRequests && metrics.premiumRequests > 0) {
         parts.push(`${palette.label('Requests')} ${palette.value(String(metrics.premiumRequests))}`);
     }
     if (metrics.rateSummary) {
         parts.push(`${palette.label('Rate')} ${palette.value(metrics.rateSummary)}`);
     }
-    if (metrics.tokenUsage.inputTokens || metrics.tokenUsage.outputTokens || metrics.tokenUsage.cacheReadTokens || metrics.tokenUsage.cacheWriteTokens) {
+    if (config.display.showTokenBreakdown && (metrics.tokenUsage.inputTokens || metrics.tokenUsage.outputTokens || metrics.tokenUsage.cacheReadTokens || metrics.tokenUsage.cacheWriteTokens)) {
         parts.push(`${palette.label('Tokens')} ${palette.value(formatTokenSummary(metrics.tokenUsage.inputTokens, metrics.tokenUsage.outputTokens, metrics.tokenUsage.cacheReadTokens, metrics.tokenUsage.cacheWriteTokens))}`);
     }
-    else if (metrics.tokenUsage.currentTokens) {
+    else if (config.display.showTokenBreakdown && metrics.tokenUsage.currentTokens) {
         parts.push(`${palette.label('Tokens')} ${palette.value(compactNumber(metrics.tokenUsage.currentTokens))}`);
     }
-    if (metrics.durationMs) {
+    if (config.display.showDuration && metrics.durationMs) {
         parts.push(`${palette.label('Duration')} ${palette.value(formatDuration(metrics.durationMs))}`);
     }
     return parts.join(' | ');
@@ -95,30 +95,62 @@ export function renderSnapshot(metrics, git, config, useColor) {
     if (config.display.showMode && metrics.mode) {
         headline.push(palette.label(`mode:${metrics.mode}`));
     }
-    if (headline.length) {
-        lines.push(config.showSeparators || config.lineLayout === 'compact' ? headline.join(' | ') : headline.join('  '));
+    const usage = renderUsage(metrics, config, palette);
+    if (config.lineLayout === 'compact') {
+        const compactSegments = [];
+        if (headline.length) {
+            compactSegments.push(headline.join(' | '));
+        }
+        if (usage) {
+            compactSegments.push(usage);
+        }
+        if (config.display.showTools) {
+            const tools = renderTools(metrics);
+            if (tools)
+                compactSegments.push(`${palette.label('Tools')} ${palette.value(tools)}`);
+        }
+        if (config.display.showAgents) {
+            const agents = renderAgents(metrics);
+            if (agents)
+                compactSegments.push(`${palette.label('Agents')} ${palette.value(agents)}`);
+        }
+        if (config.display.showTodos) {
+            const todos = renderTodos(metrics);
+            if (todos)
+                compactSegments.push(`${palette.label('Todos')} ${palette.value(todos)}`);
+        }
+        if (config.display.showSummary && metrics.summary) {
+            compactSegments.push(`${palette.label('Summary')} ${palette.value(metrics.summary)}`);
+        }
+        if (compactSegments.length) {
+            lines.push(compactSegments.join(' | '));
+        }
     }
-    const usage = renderUsage(metrics, palette);
-    if (usage) {
-        lines.push(usage);
-    }
-    if (config.display.showTools) {
-        const tools = renderTools(metrics);
-        if (tools)
-            lines.push(`${palette.label('Tools')} ${palette.value(tools)}`);
-    }
-    if (config.display.showAgents) {
-        const agents = renderAgents(metrics);
-        if (agents)
-            lines.push(`${palette.label('Agents')} ${palette.value(agents)}`);
-    }
-    if (config.display.showTodos) {
-        const todos = renderTodos(metrics);
-        if (todos)
-            lines.push(`${palette.label('Todos')} ${palette.value(todos)}`);
-    }
-    if (config.display.showSummary && metrics.summary) {
-        lines.push(`${palette.label('Summary')} ${palette.value(metrics.summary)}`);
+    else {
+        if (headline.length) {
+            lines.push(config.showSeparators ? headline.join(' | ') : headline.join('  '));
+        }
+        if (usage) {
+            lines.push(usage);
+        }
+        if (config.display.showTools) {
+            const tools = renderTools(metrics);
+            if (tools)
+                lines.push(`${palette.label('Tools')} ${palette.value(tools)}`);
+        }
+        if (config.display.showAgents) {
+            const agents = renderAgents(metrics);
+            if (agents)
+                lines.push(`${palette.label('Agents')} ${palette.value(agents)}`);
+        }
+        if (config.display.showTodos) {
+            const todos = renderTodos(metrics);
+            if (todos)
+                lines.push(`${palette.label('Todos')} ${palette.value(todos)}`);
+        }
+        if (config.display.showSummary && metrics.summary) {
+            lines.push(`${palette.label('Summary')} ${palette.value(metrics.summary)}`);
+        }
     }
     return {
         lines,

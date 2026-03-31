@@ -6,7 +6,7 @@ import { getGitSnapshot } from './git.js';
 import { renderSnapshot } from './render.js';
 import { listSessions, selectSession } from './sessions.js';
 import { readStatusLineInput } from './stdin-status.js';
-import type { SessionWorkspace, SnapshotOptions } from './types.js';
+import type { SessionMetrics, SessionWorkspace, SnapshotOptions, StatusLineInput } from './types.js';
 
 function printHelp(): void {
   console.log(`copilot-hud
@@ -44,27 +44,70 @@ function parseArgs(argv: string[]): { command: string; flags: Map<string, string
   return { command, flags };
 }
 
-function resolveSession(options: SnapshotOptions): SessionWorkspace {
+function resolveSession(options: SnapshotOptions): SessionWorkspace | undefined {
   const sessions = listSessions(options.stateRoot);
   if (sessions.length === 0) {
-    throw new Error('No Copilot CLI sessions found under ~/.copilot/session-state.');
+    return undefined;
   }
-  const session = selectSession(sessions, options.sessionId, options.cwd ?? currentWorkingDirectory());
-  if (!session) {
-    throw new Error('Unable to resolve a Copilot CLI session for the requested cwd or session id.');
-  }
-  return session;
+  return selectSession(sessions, options.sessionId, options.cwd ?? currentWorkingDirectory());
 }
 
-async function buildSnapshot(options: SnapshotOptions, asJson: boolean): Promise<string> {
-  const config = loadConfig(options.configPath);
-  const statusLineInput = await readStatusLineInput();
+function emptyMetrics(options: SnapshotOptions, statusLineInput: StatusLineInput): SessionMetrics {
+  const cwd = options.cwd ?? statusLineInput.cwd ?? currentWorkingDirectory();
+  return {
+    id: statusLineInput.sessionId ?? 'statusline',
+    cwd,
+    summary: statusLineInput.summary,
+    createdAt: undefined,
+    updatedAt: undefined,
+    active: true,
+    modelName: statusLineInput.modelName,
+    mode: statusLineInput.mode,
+    premiumRequests: 0,
+    tokenUsage: {
+      inputTokens: 0,
+      outputTokens: 0,
+      cacheReadTokens: 0,
+      cacheWriteTokens: 0,
+      currentTokens: 0,
+      conversationTokens: 0,
+      systemTokens: 0,
+      toolDefinitionsTokens: 0
+    },
+    contextWindow: statusLineInput.contextWindow,
+    rateSummary: statusLineInput.rateSummary,
+    toolCompletions: new Map<string, number>(),
+    activeTools: [],
+    activeAgents: [],
+    completedAgents: 0,
+    todoProgress: undefined,
+    lastActivityAt: undefined,
+    gitRoot: cwd,
+    gitBranch: statusLineInput.gitBranch,
+    durationMs: undefined,
+    ended: false
+  };
+}
+
+export function resolveMetrics(options: SnapshotOptions, statusLineInput?: StatusLineInput): SessionMetrics {
   const session = resolveSession({
     ...options,
     sessionId: options.sessionId ?? statusLineInput?.sessionId,
     cwd: options.cwd ?? statusLineInput?.cwd
   });
-  const metrics = mergeStatusLineInput(parseSessionMetrics(session), statusLineInput);
+  if (session) {
+    return mergeStatusLineInput(parseSessionMetrics(session), statusLineInput);
+  }
+  if (statusLineInput) {
+    return emptyMetrics(options, statusLineInput);
+  }
+  throw new Error('No Copilot CLI sessions found under ~/.copilot/session-state.');
+}
+
+async function buildSnapshot(options: SnapshotOptions, asJson: boolean): Promise<string> {
+  const config = loadConfig(options.configPath);
+  const statusLineInput = await readStatusLineInput();
+  const metrics = resolveMetrics(options, statusLineInput);
   const git = getGitSnapshot(metrics.cwd ?? metrics.gitRoot);
   const result = renderSnapshot(metrics, git, config, !options.noColor && !asJson);
   return asJson ? `${JSON.stringify(result.json, null, 2)}\n` : `${result.lines.join('\n')}\n`;
