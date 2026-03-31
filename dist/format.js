@@ -25,6 +25,8 @@ export function formatDuration(ms) {
         parts.push(`${minutes}m`);
     if (parts.length < 2 && seconds > 0)
         parts.push(`${seconds}s`);
+    if (parts.length === 0)
+        return '0s';
     return parts.slice(0, 2).join(' ');
 }
 export function formatPath(input, levels) {

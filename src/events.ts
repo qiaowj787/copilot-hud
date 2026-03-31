@@ -199,10 +199,9 @@ export function parseSessionMetrics(session: SessionWorkspace): SessionMetrics {
         metrics.tokenUsage.toolDefinitionsTokens = asNumber(data.toolDefinitionsTokens);
         const modelMetrics = data.modelMetrics as Record<string, unknown> | undefined;
         if (modelMetrics) {
-          for (const [modelName, rawMetrics] of Object.entries(modelMetrics)) {
+          for (const [, rawMetrics] of Object.entries(modelMetrics)) {
             const modelEntry = rawMetrics as Record<string, unknown>;
             const usage = modelEntry.usage as Record<string, unknown> | undefined;
-            metrics.modelName = modelName;
             if (usage) {
               metrics.tokenUsage.inputTokens += asNumber(usage.inputTokens);
               metrics.tokenUsage.outputTokens += asNumber(usage.outputTokens);

@@ -66,7 +66,12 @@ export async function readStatusLineInput(): Promise<StatusLineInput | undefined
     return undefined;
   }
 
-  const parsed = JSON.parse(raw) as Record<string, unknown>;
+  let parsed: Record<string, unknown>;
+  try {
+    parsed = JSON.parse(raw) as Record<string, unknown>;
+  } catch {
+    return undefined;
+  }
   const context = asRecord(parsed.context);
   const model = asRecord(parsed.model);
   const session = asRecord(parsed.session);
