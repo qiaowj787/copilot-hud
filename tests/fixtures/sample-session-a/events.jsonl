@@ -1,0 +1,8 @@
+{"timestamp":"2026-03-31T05:00:00.000Z","type":"session.start","data":{"sessionId":"sample-session-a","context":{"cwd":"/tmp/project-a","gitRoot":"/tmp/project-a","branch":"main"}}}
+{"timestamp":"2026-03-31T05:01:00.000Z","type":"user.message","data":{"content":"help"}}
+{"timestamp":"2026-03-31T05:01:10.000Z","type":"tool.execution_start","data":{"toolCallId":"tool-1","toolName":"view","arguments":{"intent":"Inspect auth code"}}}
+{"timestamp":"2026-03-31T05:01:15.000Z","type":"tool.execution_complete","data":{"toolCallId":"tool-1","model":"gpt-5.4","success":true,"result":{}}}
+{"timestamp":"2026-03-31T05:02:00.000Z","type":"assistant.message","data":{"outputTokens":120}}
+{"timestamp":"2026-03-31T05:03:00.000Z","type":"subagent.started","data":{"toolCallId":"agent-1","agentName":"explore","agentDisplayName":"explore"}}
+{"timestamp":"2026-03-31T05:04:00.000Z","type":"subagent.completed","data":{"toolCallId":"agent-1","agentName":"explore","agentDisplayName":"explore"}}
+{"timestamp":"2026-03-31T05:10:00.000Z","type":"session.shutdown","data":{"currentModel":"gpt-5.4","sessionStartTime":"2026-03-31T05:00:00.000Z","currentTokens":24421,"conversationTokens":2843,"systemTokens":8143,"toolDefinitionsTokens":13432,"totalPremiumRequests":4,"modelMetrics":{"gpt-5.4":{"requests":{"count":4,"cost":1},"usage":{"inputTokens":85829,"outputTokens":1700,"cacheReadTokens":65280,"cacheWriteTokens":0}}}}}

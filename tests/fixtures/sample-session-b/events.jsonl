@@ -1,0 +1,6 @@
+{"timestamp":"2026-03-31T06:00:00.000Z","type":"session.start","data":{"sessionId":"sample-session-b","context":{"cwd":"/tmp/project-b","gitRoot":"/tmp/project-b","branch":"feature/hud"}}}
+{"timestamp":"2026-03-31T06:01:00.000Z","type":"session.mode_changed","data":{"previousMode":"interactive","newMode":"autopilot"}}
+{"timestamp":"2026-03-31T06:01:05.000Z","type":"user.message","data":{"content":"build it"}}
+{"timestamp":"2026-03-31T06:01:10.000Z","type":"tool.execution_start","data":{"toolCallId":"tool-live","toolName":"bash","arguments":{"intent":"Run tests"}}}
+{"timestamp":"2026-03-31T06:01:30.000Z","type":"assistant.message","data":{"outputTokens":64}}
+{"timestamp":"2026-03-31T06:02:00.000Z","type":"subagent.started","data":{"toolCallId":"agent-live","agentName":"task","agentDisplayName":"task"}}

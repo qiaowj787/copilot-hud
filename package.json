@@ -1,0 +1,45 @@
+{
+  "name": "copilot-hud",
+  "version": "0.1.0",
+  "description": "HUD and usage monitor plugin for GitHub Copilot CLI",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "copilot-hud": "dist/index.js"
+  },
+  "files": [
+    "dist/",
+    "src/",
+    "commands/",
+    "skills/",
+    "plugin.json",
+    ".github/plugin/marketplace.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.json",
+    "test": "npm run build && node --test tests/**/*.test.js",
+    "dev": "tsc -w -p tsconfig.json",
+    "lint": "tsc --noEmit -p tsconfig.json"
+  },
+  "keywords": [
+    "copilot-cli",
+    "plugin",
+    "hud",
+    "usage",
+    "terminal",
+    "statusline"
+  ],
+  "author": {
+    "name": "Bruce Qiao"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.5.2",
+    "typescript": "^5.9.2"
+  }
+}

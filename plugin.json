@@ -1,0 +1,14 @@
+{
+  "name": "copilot-hud",
+  "description": "A GitHub Copilot CLI plugin that surfaces session usage, tools, agents, todos, and git context in a terminal HUD.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Bruce Qiao"
+  },
+  "homepage": "https://github.com/bruceqiao/copilot-hud",
+  "repository": "https://github.com/bruceqiao/copilot-hud",
+  "license": "MIT",
+  "keywords": ["copilot-cli", "hud", "statusline", "usage", "plugin"],
+  "commands": ["commands/setup.md", "commands/configure.md"],
+  "skills": ["skills/"]
+}

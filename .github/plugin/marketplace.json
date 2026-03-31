@@ -1,0 +1,22 @@
+{
+  "name": "copilot-hud-marketplace",
+  "owner": {
+    "name": "Bruce Qiao"
+  },
+  "metadata": {
+    "description": "Marketplace manifest for the copilot-hud plugin.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "copilot-hud",
+      "description": "HUD and usage monitor for GitHub Copilot CLI sessions.",
+      "version": "0.1.0",
+      "source": ".",
+      "repository": "https://github.com/bruceqiao/copilot-hud",
+      "homepage": "https://github.com/bruceqiao/copilot-hud",
+      "license": "MIT",
+      "keywords": ["copilot-cli", "hud", "usage", "statusline"]
+    }
+  ]
+}
